@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "readline.h"
 
 #define NAME_LEN 25
@@ -160,10 +161,16 @@ void update(void)
  *        order in which they were entered into the       *
  *        database.                                       *
  **********************************************************/
+int compare(const void *p, const void *q)
+{
+    return ((struct part *)p)->number - ((struct part *)q)->number;
+}
+
 void print(void)
 {
     int i;
 
+    qsort(inventory, num_parts, sizeof(struct part), compare);
     printf("Part Number   Part Name                  "
            "Quantity on Hand\n");
     for (i = 0; i < num_parts; i++)

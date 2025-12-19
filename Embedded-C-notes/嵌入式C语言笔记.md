@@ -48,11 +48,11 @@ C语言课程讲解思路:
 了解自己所使用的平台非常重要，因为相同的代码在不同的机器或运行环境下可能会产生不同的结果。因此，在论坛或社区中提问时，应当明确说明代码的运行环境，如操作系统、编译器及其版本等，以便他人准确分析和定位问题。
 
 B站李慧琴老师所用的平台：64位的redhat6,vim,gccc(make)。
-​个人平台：初期使用Win11和WSL2作为学习平台，后期使用MacBook Air M4作为学习平台了。
+​个人平台：初期使用Win11和WSL2作为学习平台，后期使用MacBook Air M4作为学习平台。
 
-### 用GCC编译Hello World
+### Hello World！
 
-**hello.c文件**
+**神一级别的hello world程序！**
 
 ```C
 #include <stdio.h>
@@ -66,6 +66,21 @@ int main(void)
         exit(0);
 }
 ```
+
+**茴香豆的四种写法（main函数）**
+
+​	在 C 语言中，`main` 函数是程序的入口点，因此也会是进程的入口和出口，标准规定 `main` 的返回值类型应为 `int`，该返回值会被返回给操作系统，用于表示程序的退出状态。虽然在某些老旧编译器或特定环境下可以看到 `void main` 的写法，但这种写法并不符合标准 C 规范，不具有良好的可移植性，因此不推荐使用。
+
+```c
+	void main(void)
+	void main(int argc, char **argv) // 其中argv也可以写作 char *argv[]
+	int main(int argc, char **argv);
+	int main(void);
+```
+
+​	标准且常见的写法主要有 `int main(void)` 和 `int main(int argc, char **argv)`，其中 `argc` 和 `argv` 用于接收命令行参数；如果程序不需要从命令行接收参数，则可以将参数列表写成 `void`，具体采用哪种形式取决于程序的使用场景和运行环境。
+
+#### 编译器GCC
 
 一个hello.c编译为可执行文件的全过程为：
 
@@ -163,25 +178,15 @@ a.c:12:41: note: include the header <string.h> or explicitly provide a declarati
 1 error generated.
 ```
 
-### 茴香豆的四种写法（main函数）
 
-​	在 C 语言中，`main` 函数是程序的入口点，标准规定 `main` 的返回值类型应为 `int`，该返回值会被返回给操作系统，用于表示程序的退出状态。虽然在某些老旧编译器或特定环境下可以看到 `void main` 的写法，但这种写法并不符合标准 C 规范，不具有良好的可移植性，因此不推荐使用。
 
-```c
-	void main(void)
-	void main(int argc, char **argv) // 其中argv也可以写作 char *argv[]
-	int main(int argc, char **argv);
-	int main(void);
-```
-​	标准且常见的写法主要有 `int main(void)` 和 `int main(int argc, char **argv)`，其中 `argc` 和 `argv` 用于接收命令行参数；如果程序不需要从命令行接收参数，则可以将参数列表写成 `void`，具体采用哪种形式取决于程序的使用场景和运行环境。
-
-### 项目管理工具make
+#### 项目管理工具make
 
 ​	在实际项目中，直接使用 `gcc` 编译大型工程并不方便，因为命令行参数较多，且容易因误操作导致文件被覆盖，例如在使用自动补全时不小心将源文件名作为输出文件名。相比之下，`make` 作为项目管理工具，可以通过目标文件（target）自动找到对应的源文件，并调用编译器完成编译过程，从而减少人为失误。通常情况下，`make` 内部使用的编译器命令是 `cc`，而在大多数系统中，`cc` 默认指向的就是 `gcc`。
 
 
 
-### 编辑器vim
+#### 编辑器vim
 
 ​	在学习 Vim 的过程中，应当有意识地使用其配置文件和常用快捷键，但不必刻意死记硬背，而是在实际使用中逐渐熟悉和掌握。Vim 的配置文件为 `vimrc`，系统级配置文件通常位于 `/etc/vimrc`（或类似路径），该配置对所有用户生效，一般不建议直接修改。更推荐的做法是将系统配置文件复制到用户家目录中，生成只对当前用户生效的隐藏配置文件 `~/.vimrc`，再在此基础上进行个性化修改，例如：
 
@@ -204,6 +209,7 @@ cp /etc/vimrc ~/.vimrc
 
 int main(void)
 {
+  	// 指针一定要初始化，防止后续用到的时候非法访问内存
     int *p = NULL;
     int i;
 
@@ -237,7 +243,7 @@ alancong@AlanCongdeMacBook-Air LHQ_C_programming_language % cc ./hello.c -Wall
 
 ```c
 #include <stdio.h>
-#include <stdlib.h> // 问题不在于强制类型转换，而是
+#include <stdlib.h> // 问题不在于强制类型转换，而是包含正确的头文件
 
 int main(void)
 {

@@ -19823,15 +19823,480 @@ White advanced!
 
      **自己写的：**
 
-   ```
+   ```C
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include "readline.h"
    
+   #define NAME_LEN 25
+   #define MAX_PARTS 100
+   
+   struct part
+   {
+       int number;
+       char name[NAME_LEN + 1];
+       int on_hand;
+   } inventory[MAX_PARTS];
+   
+   int num_parts = 0; /* number of parts currently stored */
+   
+   int find_part(int number);
+   void insert(void);
+   void search(void);
+   void update(void);
+   void print(void);
+   
+   /**********************************************************
+    * main: Prompts the user to enter an operation code,     *
+    *       then calls a function to perform the requested   *
+    *       action. Repeats until the user enters the        *
+    *       command 'q'. Prints an error message if the user *
+    *       enters an illegal code.                          *
+    **********************************************************/
+   int main(void)
+   {
+       char code;
+   
+       for (;;)
+       {
+           printf("Enter operation code: ");
+           scanf(" %c", &code);
+           while (getchar() != '\n') /* skips to end of line */
+               ;
+           switch (code)
+           {
+           case 'i':
+               insert();
+               break;
+           case 's':
+               search();
+               break;
+           case 'u':
+               update();
+               break;
+           case 'p':
+               print();
+               break;
+           case 'q':
+               return 0;
+           default:
+               printf("Illegal code\n");
+           }
+           printf("\n");
+       }
+   }
+   
+   /**********************************************************
+    * find_part: Looks up a part number in the inventory     *
+    *            array. Returns the array index if the part  *
+    *            number is found; otherwise, returns -1.     *
+    **********************************************************/
+   int find_part(int number)
+   {
+       int i;
+   
+       for (i = 0; i < num_parts; i++)
+           if (inventory[i].number == number)
+               return i;
+       return -1;
+   }
+   
+   /**********************************************************
+    * insert: Prompts the user for information about a new   *
+    *         part and then inserts the part into the        *
+    *         database. Prints an error message and returns  *
+    *         prematurely if the part already exists or the  *
+    *         database is full.                              *
+    **********************************************************/
+   void insert(void)
+   {
+       int part_number;
+   
+       if (num_parts == MAX_PARTS)
+       {
+           printf("Database is full; can't add more parts.\n");
+           return;
+       }
+   
+       printf("Enter part number: ");
+       scanf("%d", &part_number);
+       if (find_part(part_number) >= 0)
+       {
+           printf("Part already exists.\n");
+           return;
+       }
+   
+       inventory[num_parts].number = part_number;
+       printf("Enter part name: ");
+       read_line(inventory[num_parts].name, NAME_LEN);
+       printf("Enter quantity on hand: ");
+       scanf("%d", &inventory[num_parts].on_hand);
+       num_parts++;
+   }
+   
+   /**********************************************************
+    * search: Prompts the user to enter a part number, then  *
+    *         looks up the part in the database. If the part *
+    *         exists, prints the name and quantity on hand;  *
+    *         if not, prints an error message.               *
+    **********************************************************/
+   void search(void)
+   {
+       int i, number;
+   
+       printf("Enter part number: ");
+       scanf("%d", &number);
+       i = find_part(number);
+       if (i >= 0)
+       {
+           printf("Part name: %s\n", inventory[i].name);
+           printf("Quantity on hand: %d\n", inventory[i].on_hand);
+       }
+       else
+           printf("Part not found.\n");
+   }
+   
+   /**********************************************************
+    * update: Prompts the user to enter a part number.       *
+    *         Prints an error message if the part doesn't    *
+    *         exist; otherwise, prompts the user to enter    *
+    *         change in quantity on hand and updates the     *
+    *         database.                                      *
+    **********************************************************/
+   void update(void)
+   {
+       int i, number, change;
+   
+       printf("Enter part number: ");
+       scanf("%d", &number);
+       i = find_part(number);
+       if (i >= 0)
+       {
+           printf("Enter change in quantity on hand: ");
+           scanf("%d", &change);
+           inventory[i].on_hand += change;
+       }
+       else
+           printf("Part not found.\n");
+   }
+   
+   /**********************************************************
+    * print: Prints a listing of all parts in the database,  *
+    *        showing the part number, part name, and         *
+    *        quantity on hand. Parts are printed in the      *
+    *        order in which they were entered into the       *
+    *        database.                                       *
+    **********************************************************/
+   int compare(const void *p, const void *q)
+   {
+       return ((struct part *)p)->number - ((struct part *)q)->number;
+   }
+   
+   void print(void)
+   {
+       int i;
+   
+       qsort(inventory, num_parts, sizeof(struct part), compare);
+       printf("Part Number   Part Name                  "
+              "Quantity on Hand\n");
+       for (i = 0; i < num_parts; i++)
+           printf("%7d       %-25s%11d\n", inventory[i].number,
+                  inventory[i].name, inventory[i].on_hand);
+   }
+   ```
+
+   ```
+   alancong@AlanCongdeMacBook-Air chapter_17 % ./a.out 
+   Enter operation code: i
+   Enter part number: 6
+   Enter part name: test
+   Enter quantity on hand: 9
+   
+   Enter operation code: i
+   Enter part number: 2
+   Enter part name: luck
+   Enter quantity on hand: 7
+   
+   Enter operation code: p
+   Part Number   Part Name                  Quantity on Hand
+         2       luck                               7
+         6       test                               9
+   
+   Enter operation code: q
    ```
 
    
 1. 修改17.5节的程序inventory2.c，增加一个e命令（擦除）以允许用户从数据库中删除一个零件。  
 
-   ```
+   ```C
+   /*********************************************************
+    * From C PROGRAMMING: A MODERN APPROACH, Second Edition *
+    * By K. N. King                                         *
+    * Copyright (c) 2008, 1996 W. W. Norton & Company, Inc. *
+    * All rights reserved.                                  *
+    * This program may be freely distributed for class use, *
+    * provided that this copyright notice is retained.      *
+    *********************************************************/
    
+   /* inventory2.c (Chapter 17, page 434) */
+   /* Maintains a parts database (linked list version) */
+   
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include "readline.h"
+   
+   #define NAME_LEN 25
+   
+   struct part
+   {
+       int number;
+       char name[NAME_LEN + 1];
+       int on_hand;
+       struct part *next;
+   };
+   
+   struct part *inventory = NULL; /* points to first part */
+   
+   struct part *find_part(int number);
+   void insert(void);
+   void delete(void);
+   void search(void);
+   void update(void);
+   void print(void);
+   
+   /**********************************************************
+    * main: Prompts the user to enter an operation code,     *
+    *       then calls a function to perform the requested   *
+    *       action. Repeats until the user enters the        *
+    *       command 'q'. Prints an error message if the user *
+    *       enters an illegal code.                          *
+    **********************************************************/
+   int main(void)
+   {
+       char code;
+   
+       for (;;)
+       {
+           printf("Enter operation code: ");
+           scanf(" %c", &code);
+           while (getchar() != '\n') /* skips to end of line */
+               ;
+           switch (code)
+           {
+           case 'i':
+               insert();
+               break;
+           case 'e':
+               delete();
+               break;
+           case 's':
+               search();
+               break;
+           case 'u':
+               update();
+               break;
+           case 'p':
+               print();
+               break;
+           case 'q':
+               return 0;
+           default:
+               printf("Illegal code\n");
+           }
+           printf("\n");
+       }
+   }
+   
+   /**********************************************************
+    * find_part: Looks up a part number in the inventory     *
+    *            list. Returns a pointer to the node         *
+    *            containing the part number; if the part     *
+    *            number is not found, returns NULL.          *
+    **********************************************************/
+   struct part *find_part(int number)
+   {
+       struct part *p;
+   
+       for (p = inventory;
+            p != NULL && number > p->number;
+            p = p->next)
+           ;
+       if (p != NULL && number == p->number)
+           return p;
+       return NULL;
+   }
+   
+   /**********************************************************
+    * insert: Prompts the user for information about a new   *
+    *         part and then inserts the part into the        *
+    *         inventory list; the list remains sorted by     *
+    *         part number. Prints an error message and       *
+    *         returns prematurely if the part already exists *
+    *         or space could not be allocated for the part.  *
+    **********************************************************/
+   void insert(void)
+   {
+       struct part *cur, *prev, *new_node;
+   
+       new_node = malloc(sizeof(struct part));
+       if (new_node == NULL)
+       {
+           printf("Database is full; can't add more parts.\n");
+           return;
+       }
+   
+       printf("Enter part number: ");
+       scanf("%d", &new_node->number);
+   
+       for (cur = inventory, prev = NULL;
+            cur != NULL && new_node->number > cur->number;
+            prev = cur, cur = cur->next)
+           ;
+       if (cur != NULL && new_node->number == cur->number)
+       {
+           printf("Part already exists.\n");
+           free(new_node);
+           return;
+       }
+   
+       printf("Enter part name: ");
+       read_line(new_node->name, NAME_LEN);
+       printf("Enter quantity on hand: ");
+       scanf("%d", &new_node->on_hand);
+   
+       new_node->next = cur;
+       if (prev == NULL)
+           inventory = new_node;
+       else
+           prev->next = new_node;
+   }
+   
+   void delete(void)
+   {
+       struct part *cur, *to_delete;
+       int n;
+   
+       printf("Enter the part number to delete: ");
+       scanf("%d", &n);
+   
+       if (inventory == NULL)
+           return;
+   
+       if (inventory->number == n)
+       {
+           to_delete = inventory;
+           inventory = inventory->next;
+           free(to_delete);
+           return;
+       }
+   
+       for (cur = inventory; cur->next != NULL && cur->next->number != n; cur = cur->next)
+           ;
+   
+       // did not find
+       if (cur->next == NULL)
+       {
+           printf("Part not found.\n");
+           return;
+       }
+   
+       to_delete = cur->next;
+       cur->next = to_delete->next;
+       free(to_delete);
+       return;
+   }
+   
+   /**********************************************************
+    * search: Prompts the user to enter a part number, then  *
+    *         looks up the part in the database. If the part *
+    *         exists, prints the name and quantity on hand;  *
+    *         if not, prints an error message.               *
+    **********************************************************/
+   void search(void)
+   {
+       int number;
+       struct part *p;
+   
+       printf("Enter part number: ");
+       scanf("%d", &number);
+       p = find_part(number);
+       if (p != NULL)
+       {
+           printf("Part name: %s\n", p->name);
+           printf("Quantity on hand: %d\n", p->on_hand);
+       }
+       else
+           printf("Part not found.\n");
+   }
+   
+   /**********************************************************
+    * update: Prompts the user to enter a part number.       *
+    *         Prints an error message if the part doesn't    *
+    *         exist; otherwise, prompts the user to enter    *
+    *         change in quantity on hand and updates the     *
+    *         database.                                      *
+    **********************************************************/
+   void update(void)
+   {
+       int number, change;
+       struct part *p;
+   
+       printf("Enter part number: ");
+       scanf("%d", &number);
+       p = find_part(number);
+       if (p != NULL)
+       {
+           printf("Enter change in quantity on hand: ");
+           scanf("%d", &change);
+           p->on_hand += change;
+       }
+       else
+           printf("Part not found.\n");
+   }
+   
+   /**********************************************************
+    * print: Prints a listing of all parts in the database,  *
+    *        showing the part number, part name, and         *
+    *        quantity on hand. Part numbers will appear in   *
+    *        ascending order.                                *
+    **********************************************************/
+   void print(void)
+   {
+       struct part *p;
+   
+       printf("Part Number   Part Name                  "
+              "Quantity on Hand\n");
+       for (p = inventory; p != NULL; p = p->next)
+           printf("%7d       %-25s%11d\n", p->number, p->name,
+                  p->on_hand);
+   }
+   ```
+
+   ```
+   alancong@AlanCongdeMacBook-Air chapter_17 % ./a.out 
+   Enter operation code: i
+   Enter part number: 1
+   Enter part name: ipad 
+   Enter quantity on hand: 9
+   
+   Enter operation code: i
+   Enter part number: 2
+   Enter part name: iphone
+   Enter quantity on hand: 28
+   
+   Enter operation code: p
+   Part Number   Part Name                  Quantity on Hand
+         1       ipad                               9
+         2       iphone                            28
+   
+   Enter operation code: e
+   Enter the part number to delete: 2
+   
+   Enter operation code: e
+   Enter the part number to delete: 3
+   Part not found.
+   
+   Enter operation code: q
    ```
 
    

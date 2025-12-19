@@ -24,5 +24,6 @@
         "unordered_map": "c",
         "stack.h": "c",
         "rpn_calculator.h": "c"
-    }
+    },
+    "idf.pythonInstallPath": "/usr/bin/python3"
 }
