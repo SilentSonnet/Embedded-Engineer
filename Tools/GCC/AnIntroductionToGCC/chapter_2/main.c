@@ -2,7 +2,7 @@
 int 
 main(void)
 {
-	hello("world");
+	hello("everyone");
 	return 0;
 }
 
